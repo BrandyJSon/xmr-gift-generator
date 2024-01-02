@@ -15,12 +15,8 @@ from tkcalendar import Calendar
 import os
 
 template= """\"Seed\":\"{0}\",
-\"Private-spend\":\"{1}\",
-\"Private-view\":\"{2}\",
-\"Public-spend\":\"{3}\",
-\"Public-view\":\"{4}\",
-\"Address\":\"{5}\",
-\"CreationDate\":\"{6}\""""
+\"CreationDate\":\"{1}\",
+\"TXids\":\"{2}\""""
 
 geo ="400x300"
 ## Generate wallet
@@ -61,6 +57,10 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
+def formatData(root,phrase,date,txids):
+	global data
+	data = ("{" + template.format(phrase,date,txids) +"}").encode()
+	root.destroy()
 btn = tk.Button(root, text = "Current Date is selected", command=select_date)
 btn.place(x=110,y=200)
 
@@ -69,8 +69,30 @@ root.mainloop()
 
 wallet = Seed()
 
-data = ("{" + template.format(wallet.phrase,wallet.secret_spend_key(),wallet.secret_view_key(),wallet.public_spend_key(),wallet.public_view_key(),wallet.public_address(),str(saved)) + "}").encode()
+#data = ("{" + template.format(wallet.phrase,wallet.secret_spend_key(),wallet.secret_view_key(),wallet.public_spend_key(),wallet.public_view_key(),wallet.public_address(),str(saved)) + "}").encode()
 
+root.geometry("600x750")
+
+canvas = tk.Canvas(root,bg='white',width=599,height=849)
+canvas.pack()
+text = tk.Text(root,bg="white")
+l = tk.Label(root,text= "test")
+text.pack()
+l.pack()
+canvas.create_text(300, 50, text="Scan QR code in Wallet app to send XMR to giftcard", fill="black", font=('Helvetica 15 bold'))
+receive = ImageTk.PhotoImage(resize(580,segno_pil.write_pil(segno.make_qr(b"monero:" + str(wallet.public_address()).encode()))),master=canvas)
+canvas.create_text(300,650,text="Enter TX ids of deposit transactions as a comma seperated list")
+txInput = tk.Entry(root,width=40)
+txInput.config(font=('Helvetica 16'))
+canvas.create_window(300,680,window=txInput)
+root.title("")
+submit = tk.Button(root, text="Submit",width=20,height=1,command=lambda : formatData(root, wallet.phrase,str(saved),txInput.get()))
+
+item = canvas.create_image(299,349,image=receive)
+
+canvas.create_window(300,730,window=submit)
+root.deiconify()
+canvas.mainloop()
 
 ## Encryption Code
 key = get_random_bytes(32)
@@ -126,23 +148,6 @@ os.remove(qrpath)
 
 #root =tk.Tk()
 
-root.geometry("600x650")
 
-canvas = tk.Canvas(root,bg='white',width=599,height=649)
-canvas.pack()
-text = tk.Text(root,bg="white")
-l = tk.Label(root,text= "test")
-text.pack()
-l.pack()
-canvas.create_text(300, 50, text="Scan QR code in Wallet app to send XMR to giftcard", fill="black", font=('Helvetica 15 bold'))
-receive = ImageTk.PhotoImage(resize(580,segno_pil.write_pil(segno.make_qr(b"monero:" + str(wallet.public_address()).encode()))),master=canvas)
-
-root.title("")
-
-
-item = canvas.create_image(299,349,image=receive)
-
-root.deiconify()
-canvas.mainloop()
 
 background.show()
